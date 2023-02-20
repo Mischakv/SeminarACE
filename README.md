@@ -1,2 +1,2 @@
 # SeminarACE
-MPC on probability maps
+WIP: MPC on probability maps
