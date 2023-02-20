@@ -23,7 +23,7 @@ elif map_nr == 2:
 count = 0
 
 # initial values for mpc
-steps = 150  # steps to be calculated
+steps = 500  # steps to be calculated
 dt = 1/5  # time per steps
 T = 15  # horizon
 
