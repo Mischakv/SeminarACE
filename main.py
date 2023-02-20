@@ -8,6 +8,7 @@ from stuff import read_prob_map, get_pdf
 from scipy.interpolate import LinearNDInterpolator
 from tqdm import tqdm
 
+# choose between two different maps
 map_nr = 2
 if map_nr==1:
   n_components = 32
@@ -20,6 +21,15 @@ elif map_nr == 2:
   box_size_w,box_size_h = 25, 25
   path = "p_map_2_11_5000_800x800_1.txt"
 count = 0
+
+# initial values for mpc
+steps = 150  # steps to be calculated
+dt = 1/5  # time per steps
+T = 15  # horizon
+
+# inital x and y values
+init_x = 9
+init_y = 9
 
 boxes_number_width = map_width/box_size_w
 boxes_number_height = map_height/box_size_h
@@ -41,11 +51,6 @@ interp_func = LinearNDInterpolator(list(zip(xy[:,0],xy[:,1])), zg)
 # reshape discrete pdf
 zg = zg.reshape(_x.shape)
 
-# Init values for mpc
-steps = 150  # steps to be calculated
-dt = 1/5  # time per steps
-T = 30  # horizon
-
 # init empty arrays
 t = np.linspace(0, steps*dt, steps)
 
@@ -61,10 +66,6 @@ ol_z = np.zeros(T)
 
 u_x = np.zeros(steps)
 u_y = np.zeros(steps)
-
-# inital x and y values
-init_x = 9
-init_y = 9
 
 new_x = init_x
 new_y = init_y
