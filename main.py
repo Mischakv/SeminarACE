@@ -17,7 +17,7 @@ if map_nr==1:
   box_size_w,box_size_h = 25, 25
   path = "p_map_2_11_5000_600x600_1.txt"
 elif map_nr == 2:
-  n_components = 33
+  n_components = 29
   map_width, map_height = 800, 800
   box_size_w,box_size_h = 25, 25
   path = "p_map_2_11_5000_800x800_1.txt"
