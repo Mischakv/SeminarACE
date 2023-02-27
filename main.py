@@ -24,13 +24,13 @@ elif map_nr == 2:
 count = 0
 
 # initial values for mpc
-steps = 300  # steps to be calculated
+steps = 20  # steps to be calculated
 dt = 1/5  # time per steps
-T = 15  # horizon
+T = 70  # horizon
 
 # inital x and y values
-init_x = 9
-init_y = 9
+init_x = 10
+init_y = 15
 
 boxes_number_width = map_width/box_size_w
 boxes_number_height = map_height/box_size_h
@@ -145,5 +145,6 @@ ax4.plot_surface(Xnew,Ynew,interp_func(Xnew, Ynew), cmap=cm.jet, alpha=0.6)
 ax4.scatter(init_x,init_y, interp_func(init_x,init_y), color="green", label="Start")
 ax4.plot(x, y, z, linewidth=3, color='r',alpha=1)
 ax4.set_title('Closed Loop')
-
+ax4.view_init(elev=58., azim=-45)
+#plt.savefig('histogram.pgf')
 plt.show()
