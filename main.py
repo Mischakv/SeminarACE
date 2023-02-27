@@ -24,13 +24,13 @@ elif map_nr == 2:
 count = 0
 
 # initial values for mpc
-steps = 20  # steps to be calculated
+steps = 100  # steps to be calculated
 dt = 1/5  # time per steps
-T = 70  # horizon
+T = 30  # horizon
 
 # inital x and y values
-init_x = 10
-init_y = 15
+init_x = 5
+init_y = 10
 
 boxes_number_width = map_width/box_size_w
 boxes_number_height = map_height/box_size_h
