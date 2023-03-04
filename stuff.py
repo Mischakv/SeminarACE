@@ -14,7 +14,7 @@ def read_prob_map(path, w_box_number, h_box_number):
     f.close()
     return arr
 
-def get_pdf(n_components, xy, means, covariances):
+def get_probMap(n_components, xy, means, covariances):
     zg = multivariate_normal.pdf(xy, mean=means[0][0:2], cov=covariances[0][0:2,0:2])*round(means[0][2],4)
     for i in range(1,n_components):
         zg += multivariate_normal.pdf(xy, mean=means[i][0:2], cov=covariances[i][0:2,0:2])*round(means[i][2],4)

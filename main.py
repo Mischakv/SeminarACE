@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from sklearn.mixture import GaussianMixture
 from matplotlib import cm
 from MPC_control_pdf import mpc_control
-from stuff import read_prob_map, get_pdf
+from stuff import read_prob_map, get_probMap
 from scipy.interpolate import LinearNDInterpolator
 from tqdm import tqdm
 from sklearn import preprocessing
@@ -24,9 +24,9 @@ elif map_nr == 2:
 count = 0
 
 # initial values for mpc
-steps = 100  # steps to be calculated
+steps = 200  # steps to be calculated
 dt = 1/5  # time per steps
-T = 30  # horizon
+T = 20  # horizon
 
 # inital x and y values
 init_x = 5
@@ -38,19 +38,17 @@ arr = read_prob_map(path, boxes_number_width, boxes_number_height )
 
 # calculate Gaussian Mixture
 gm = GaussianMixture(n_components=n_components, random_state=0).fit(arr)
-labels = gm.predict(arr)
 means = gm.means_
 covariances = gm.covariances_
 
-_x, _y = np.mgrid[0:(boxes_number_width-1), 0:(boxes_number_height-1)]
+_x, _y = np.mgrid[0:(boxes_number_width-1):0.1, 0:(boxes_number_height-1):0.1]
 xy = np.column_stack([_x.flat, _y.flat])
-zg = get_pdf(n_components, xy, means, covariances)
+zg = get_probMap(n_components, xy, means, covariances)
 
-# reshape discrete pdf
+# reshape discrete probability map
 zg = zg.reshape(_x.shape)
-#zg = preprocessing.normalize(zg)
 
-# interpolate discrete pdf
+# interpolate discrete probability map
 interp_func = LinearNDInterpolator(list(zip(xy[:,0],xy[:,1])), zg.flatten())
 
 # init empty arrays
@@ -81,7 +79,7 @@ ol_y[0] = init_y
 z[0] = interp_func(init_x,init_y)
 
 # calculate the optimal input
-inputs = mpc_control(init_x,init_y,interp_func,0,0,T,5*np.identity(2),5*np.identity(2),dt)
+inputs = mpc_control(init_x,init_y,interp_func,0,0,T,10*np.identity(1),10*np.identity(1),dt)
 # first open loop inputs
 first_ol_input = inputs
 
@@ -102,7 +100,7 @@ for i in tqdm(range(steps-1), desc ="Progress: "):
     z[i+1] = interp_func(new_x,new_y)
     u_x[i+1] = inputs[0][0]
     u_y[i+1] = inputs[1][0]
-    inputs = mpc_control(new_x,new_y,interp_func,inputs[0][0],inputs[1][0],T,np.identity(2),np.identity(2),dt)
+    inputs = mpc_control(new_x,new_y,interp_func,inputs[0][0],inputs[1][0],T,np.identity(1),np.identity(1),dt)
 
 # plot solution
 xnew = np.linspace(0, boxes_number_width-1, 800)
