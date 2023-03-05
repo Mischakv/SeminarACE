@@ -8,6 +8,9 @@ from stuff import read_prob_map, get_probMap
 from scipy.interpolate import LinearNDInterpolator
 from tqdm import tqdm
 from sklearn import preprocessing
+from sklearn.model_selection import GridSearchCV
+import pandas as pd
+from sklearn import metrics
 
 # choose between two different maps
 map_nr = 2
@@ -24,18 +27,59 @@ elif map_nr == 2:
 count = 0
 
 # initial values for mpc
-steps = 200  # steps to be calculated
+steps = 400  # steps to be calculated
 dt = 1/5  # time per steps
-T = 20  # horizon
+T = 30  # horizon
 
 # inital x and y values
-init_x = 5
-init_y = 10
+init_x = 7
+init_y = 5
 
 boxes_number_width = map_width/box_size_w
 boxes_number_height = map_height/box_size_h
 arr = read_prob_map(path, boxes_number_width, boxes_number_height )
 
+#START BIC component estimator
+def gmm_bic_score(estimator, X):
+    """Callable to pass to GridSearchCV that will use the BIC score."""
+    # Make it negative since GridSearchCV expects a score to maximize
+    #clusters = estimator.fit_predict(X)
+    #return metrics.silhouette_score(X,clusters)
+    return -estimator.bic(X)
+
+
+param_grid = {
+    "n_components": range(2, 31),
+    "covariance_type": ["full"],
+    "random_state":[0]
+}
+grid_search = GridSearchCV(
+    GaussianMixture(), param_grid=param_grid, scoring=gmm_bic_score
+)
+grid_search.fit(arr)
+
+df = pd.DataFrame(grid_search.cv_results_)[
+    ["param_n_components", "param_covariance_type", "mean_test_score"]
+]
+df["mean_test_score"] = -df["mean_test_score"]
+df = df.rename(
+    columns={
+        "param_n_components": "Number of components",
+        "param_covariance_type": "Type of covariance",
+        "mean_test_score": "BIC score",
+    }
+)
+df.sort_values(by="BIC score").head()
+print(df.nlargest(10, 'BIC score'))
+#fig, ax = plt.subplots(1, 1)
+#ax.table(cellText=df.nlargest(5, 'BIC score').values, colLabels=df.nlargest(5, 'BIC score').keys(), loc='center')
+#ax.plot(df.values[:,0],df.values[:,2])
+#ax.set_title('BIC score')
+#ax.set_ylabel('BIC score')
+#ax.set_xlabel('Number of components')
+#plt.show()
+
+#END BIC
 # calculate Gaussian Mixture
 gm = GaussianMixture(n_components=n_components, random_state=0).fit(arr)
 means = gm.means_
@@ -100,7 +144,7 @@ for i in tqdm(range(steps-1), desc ="Progress: "):
     z[i+1] = interp_func(new_x,new_y)
     u_x[i+1] = inputs[0][0]
     u_y[i+1] = inputs[1][0]
-    inputs = mpc_control(new_x,new_y,interp_func,inputs[0][0],inputs[1][0],T,np.identity(1),np.identity(1),dt)
+    inputs = mpc_control(new_x,new_y,interp_func,inputs[0][0],inputs[1][0],T,1000*np.identity(1),np.identity(1),dt)
 
 # plot solution
 xnew = np.linspace(0, boxes_number_width-1, 800)
@@ -127,22 +171,30 @@ ax1.legend()
 ax1.set_title('Inputs')
 
 ax2 = fig.add_subplot(1, 3, 2)
-ax2.plot(x, y)
+ax2.plot(x, y, label="Path")
 ax2.scatter(init_x,init_y, color="green", label="Start")
-ax2.scatter(means[:,0], means[:,1],means[:,2]*100, color='r', alpha=1)
+ax2.scatter(means[:,0], means[:,1],means[:,2]*100, color='r', alpha=1, label="GMM Means")
 ax2.grid(True)
+ax2.set_xlabel("X-direction")
+ax2.set_ylabel("Y-direction")
+ax2.legend()
 ax2.set_title('Drone trajectory')
 
 ax5 = fig.add_subplot(1, 3, 3)
 ax5.plot(t, interp_func(x,y), linewidth=3, color='r',alpha=1)
-ax5.set_title('Z-Axis Closed Loop')
+ax5.set_xlabel("Time")
+ax5.set_ylabel("Probability")
+ax5.set_title('Probability on Map - Closed Loop')
 
 fig = plt.figure()
 ax4 = fig.add_subplot(1, 1, 1, projection = '3d')
 ax4.plot_surface(Xnew,Ynew,interp_func(Xnew, Ynew), cmap=cm.jet, alpha=0.6)
 ax4.scatter(init_x,init_y, interp_func(init_x,init_y), color="green", label="Start")
 ax4.plot(x, y, z, linewidth=3, color='r',alpha=1)
-ax4.set_title('Closed Loop')
+ax4.set_title('Probability Map')
 ax4.view_init(elev=58., azim=-45)
+ax4.set_xlabel("X-direction")
+ax4.set_ylabel("Y-direction")
+ax4.set_zlabel("Probability")
 #plt.savefig('histogram.pgf')
 plt.show()

@@ -64,7 +64,7 @@ def mpc_control(x, y, pdf, u_prev, v_prev, T, Q, R, dt):
         cost = 0
         test = 0
         for i in range(N-1):
-            test += -pdf(X[i,0],Y[i,0])*100
+            cost += -pdf(X[i,0],Y[i,0])*Q
             cost += np.dot(U[i], U[i])*R
             cost += np.dot(V[i], V[i])*R
         return test + cost#[0,0]
