@@ -23,16 +23,16 @@ if map_nr==1:
   box_size_w,box_size_h = 25, 25
   path = "p_map_2_11_5000_600x600_1.txt"
 elif map_nr == 2:
-  n_components = 29
+  n_components = 18
   map_width, map_height = 800, 800
   box_size_w,box_size_h = 25, 25
-  path = "p_map_2_11_5000_800x800_1.txt"
+  path = "p_map_15_12_5000_800x800_1.txt"
 count = 0
 
 # initial values for mpc
-steps = 400  # steps to be calculated
+steps = 2  # steps to be calculated
 dt = 1/5  # time per steps
-T = 45  # horizon
+T = 15  # horizon
 
 # inital x and y values
 init_x = 7
@@ -52,7 +52,7 @@ def gmm_bic_score(estimator, X):
 
 
 param_grid = {
-    "n_components": range(2, 31),
+    "n_components": range(2, 35),
     "covariance_type": ["full"],
     "random_state":[0]
 }
@@ -74,12 +74,12 @@ df = df.rename(
 )
 df.sort_values(by="BIC score").head()
 print(df.nlargest(10, 'BIC score'))
-#fig, ax = plt.subplots(1, 1)
-#ax.table(cellText=df.nlargest(5, 'BIC score').values, colLabels=df.nlargest(5, 'BIC score').keys(), loc='center')
-#ax.plot(df.values[:,0],df.values[:,2])
-#ax.set_title('BIC score')
-#ax.set_ylabel('BIC score')
-#ax.set_xlabel('Number of components')
+fig, ax = plt.subplots(1, 1)
+ax.table(cellText=df.nlargest(5, 'BIC score').values, colLabels=df.nlargest(5, 'BIC score').keys(), loc='center')
+ax.plot(df.values[:,0],df.values[:,2])
+ax.set_title('BIC score')
+ax.set_ylabel('BIC score')
+ax.set_xlabel('Number of components')
 #plt.show()
 
 #END BIC
@@ -178,7 +178,7 @@ ax3.legend()
 ax3.set_title('Map')
 
 ax8 = fig.add_subplot(1, 4, 3)
-ax8.plot(ol_t, interp_func(ol_x,ol_y)*1000, linewidth=1, color='r',alpha=1)
+ax8.plot(ol_t, interp_func(ol_x,ol_y), linewidth=1, color='r',alpha=1)
 ax8.set_xlabel("Time")
 ax8.set_ylabel("Probability")
 ax8.set_title('Probability on map')
@@ -209,7 +209,7 @@ ax2.legend()
 ax2.set_title('Drone trajectory')
 
 ax5 = fig.add_subplot(1, 4, 3)
-ax5.plot(t, interp_func(x,y)*1000, linewidth=3, color='r',alpha=1)
+ax5.plot(t, interp_func(x,y), linewidth=3, color='r',alpha=1)
 ax5.set_xlabel("Time")
 ax5.set_ylabel("Probability")
 ax5.set_title('Probability on Map - Closed Loop')
