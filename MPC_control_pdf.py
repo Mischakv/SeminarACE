@@ -25,8 +25,8 @@ def mpc_control(x, y, pdf, u_prev, v_prev, T, Q, R, dt):
     V = np.zeros((N-1, 1))  # control input matrix (y-axis)
 
     # Set initial state and control input
-    X[0] = [x, 0]
-    Y[0] = [y, 0]
+    X[0] = x
+    Y[0] = y
     U[0] = u_prev
     V[0] = v_prev
 
